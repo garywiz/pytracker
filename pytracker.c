@@ -1,5 +1,7 @@
 #include "pytracker.h"
 
+PyTypeObject * TrackableType = NULL;
+
 static PyObject * pytracker_version(PyObject *self, PyObject *args)
 {
     return Py_BuildValue("i", 1);
@@ -23,4 +25,11 @@ PyMODINIT_FUNC initpytracker(void)
     PytrackerError = PyErr_NewException("pytracker.error", NULL, NULL);
     Py_INCREF(PytrackerError);
     PyModule_AddObject(m, "error", PytrackerError);
+
+    if (PyType_Ready(&_TrackableType) < 0)
+	return;
+
+    TrackableType = &_TrackableType;
+    Py_INCREF(TrackableType);
+    PyModule_AddObject(m, "Trackable", (PyObject*) TrackableType);
 }

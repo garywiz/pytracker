@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 
 pytracker = Extension('pytracker',
-                      sources = ['pytracker.c'])
+                      sources = ['pytracker.c', 'trackable.c'])
 
 setup(
     name = "pytracker",
