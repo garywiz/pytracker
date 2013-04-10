@@ -7,5 +7,5 @@ class test_all(unittest.TestCase):
         self.assertEqual(pyt.version(), 1, 'Incorrect pytracker version number.')
 
     def test_trackable1(self):
-        obj = pyt.trackable.Trackable()
+        obj = pyt.Trackable()
         print obj
