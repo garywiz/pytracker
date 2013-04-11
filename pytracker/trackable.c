@@ -1,4 +1,4 @@
-#include "pytracker.h"
+#include "trackable.h"
 
 PyObject* Trackable_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 {
@@ -37,7 +37,7 @@ static PyMethodDef Trackable_methods[] = {
 PyTypeObject _TrackableType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "pytracker.Trackable",      /*tp_name*/
+    "pytracker.trackable.Trackable",	      /*tp_name*/
     sizeof(Trackable),		/*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                         /*tp_dealloc*/
@@ -75,3 +75,37 @@ PyTypeObject _TrackableType = {
     0,			       /*tp_alloc*/
     Trackable_new,	       /*tp_new*/
 };
+
+PyTypeObject * TrackableType = NULL;
+
+static PyObject * trackable_version(PyObject *self, PyObject *args)
+{
+    return Py_BuildValue("i", 1);
+}
+
+static PyMethodDef trackableMethods[] = {
+    {"version", trackable_version, METH_VARARGS,
+     "Display version of pytracker extension"},
+    {NULL, NULL, 0, NULL}
+};
+
+PyMODINIT_FUNC inittrackable(void)
+{
+    PyObject *m;
+    PyObject *TrackableError;
+
+    m = Py_InitModule("trackable", trackableMethods);
+    if (m == NULL)
+	return;
+
+    TrackableError = PyErr_NewException("trackable.error", NULL, NULL);
+    Py_INCREF(TrackableError);
+    PyModule_AddObject(m, "error", TrackableError);
+
+    if (PyType_Ready(&_TrackableType) < 0)
+	return;
+
+    TrackableType = &_TrackableType;
+    Py_INCREF(TrackableType);
+    PyModule_AddObject(m, "Trackable", (PyObject*) TrackableType);
+}
