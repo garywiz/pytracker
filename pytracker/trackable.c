@@ -1,17 +1,19 @@
 #include "trackable.h"
 
-#define PING_ATTACH "notify_attached"
-#define PING_DETACH "notify_detached"
-#define PING_DESTROY "notify_destroyed"
+static PyObject * meth_ATTACH;
+static PyObject * meth_DETACH;
+static PyObject * meth_DESTROY;
 
-static void pingtracker(Trackable *self, const char * method)
+static PyObject *  global_tracker = NULL;
+
+static void pingtracker(Trackable *self, PyObject * method)
 {
     PyObject * result;
 
     if (self->tracker == Py_None)
 	return;
    
-    result = PyObject_CallMethod(self->tracker, (char *)method, NULL);
+    result = PyObject_CallMethodObjArgs(self->tracker, method, self->ob_type, NULL);
     if (result == NULL) {
 	PyErr_Clear();
     } else {
@@ -26,8 +28,14 @@ PyObject* Trackable_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
     self = (Trackable*) type->tp_alloc(type, 0);
     if (self == NULL) goto error;
 
-    self->tracker = Py_None;
+    if (global_tracker != NULL)
+	self->tracker = global_tracker;
+    else
+	self->tracker = Py_None;
+
     Py_INCREF(self->tracker);
+
+    pingtracker(self, meth_ATTACH);
 
     goto success;
 
@@ -37,11 +45,6 @@ error:
 
 success:
     return (PyObject*) self;
-}
-
-int Trackable_init(Trackable* self, PyObject* args, PyObject* kwargs)
-{
-    return 0;
 }
 
 static int Trackable_traverse(Trackable *self, visitproc visit, void *arg)
@@ -60,7 +63,7 @@ static int Trackable_clear(Trackable *self)
 
 void Trackable_dealloc(Trackable* self)
 {
-    pingtracker(self, PING_DESTROY);
+    pingtracker(self, meth_DESTROY);
 
     Trackable_clear(self);
     self->ob_type->tp_free((PyObject*)self);
@@ -74,13 +77,13 @@ static PyObject * Trackable_get_tracker(Trackable *self)
 
 static PyObject * Trackable_set_tracker(Trackable *self, PyObject *arg)
 {
-    pingtracker(self, PING_DETACH);
+    pingtracker(self, meth_DETACH);
 
     Py_XDECREF(self->tracker);
     Py_INCREF(arg);
     self->tracker = arg;
 
-    pingtracker(self, PING_ATTACH);
+    pingtracker(self, meth_ATTACH);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -137,7 +140,7 @@ PyTypeObject _TrackableType = {
     0,			       /*tp_descr_get*/
     0,			       /*tp_descr_set*/
     0,			       /*tp_dictoffset*/
-    (initproc)Trackable_init,  /*tp_init*/
+    0,			       /*tp_init*/
     0,			       /*tp_alloc*/
     Trackable_new,	       /*tp_new*/
 };
@@ -149,9 +152,20 @@ static PyObject * trackable_version(PyObject *self, PyObject *args)
     return Py_BuildValue("i", 1);
 }
 
+static PyObject * trackable_set_global_tracker(PyObject *self, PyObject *arg)
+{
+    Py_XDECREF(global_tracker);
+    Py_INCREF(arg);
+    global_tracker = arg;
+
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef trackableMethods[] = {
     {"version", trackable_version, METH_VARARGS,
      "Display version of pytracker extension"},
+    {"set_global_tracker", trackable_set_global_tracker, METH_O,
+     "Set the tracker to be used for all objects"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -163,6 +177,10 @@ PyMODINIT_FUNC inittrackable(void)
     m = Py_InitModule("trackable", trackableMethods);
     if (m == NULL)
 	return;
+
+    meth_ATTACH = Py_BuildValue("s", "notify_attached");
+    meth_DETACH = Py_BuildValue("s", "notify_detached");
+    meth_DESTROY = Py_BuildValue("s", "notify_destroyed");
 
     TrackableError = PyErr_NewException("trackable.error", NULL, NULL);
     Py_INCREF(TrackableError);
