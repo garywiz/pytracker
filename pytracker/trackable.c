@@ -5,6 +5,7 @@ static PyObject * meth_DETACH;
 static PyObject * meth_DESTROY;
 
 static PyObject *  global_tracker = NULL;
+static unsigned long long serial_number = 0;
 
 static void pingtracker(Trackable *self, PyObject * method)
 {
@@ -13,7 +14,7 @@ static void pingtracker(Trackable *self, PyObject * method)
     if (self->tracker == Py_None)
 	return;
    
-    result = PyObject_CallMethodObjArgs(self->tracker, method, self->ob_type, NULL);
+    result = PyObject_CallMethodObjArgs(self->tracker, method, self->serial, self->ob_type, self->data_bundle, NULL);
     if (result == NULL) {
 	PyErr_Clear();
     } else {
@@ -28,12 +29,17 @@ PyObject* Trackable_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
     self = (Trackable*) type->tp_alloc(type, 0);
     if (self == NULL) goto error;
 
+    Py_INCREF(Py_None);
+    self->data_bundle = Py_None;
+
     if (global_tracker != NULL)
 	self->tracker = global_tracker;
     else
 	self->tracker = Py_None;
 
     Py_INCREF(self->tracker);
+
+    self->serial = PyLong_FromUnsignedLongLong(++serial_number);
 
     pingtracker(self, meth_ATTACH);
 
@@ -57,6 +63,8 @@ static int Trackable_traverse(Trackable *self, visitproc visit, void *arg)
 static int Trackable_clear(Trackable *self)
 {
     Py_CLEAR(self->tracker);
+    Py_CLEAR(self->serial);
+    Py_CLEAR(self->data_bundle);
 
     return 0;
 }
@@ -89,16 +97,46 @@ static PyObject * Trackable_set_tracker(Trackable *self, PyObject *arg)
     return Py_None;
 }
 
+static PyObject * Trackable_get_tracker_serial(Trackable *self)
+{
+    Py_INCREF(self->serial);
+    return self->serial;
+}
+
+static PyObject * Trackable_get_data_bundle(Trackable *self)
+{
+    Py_INCREF(self->data_bundle);
+    return self->data_bundle;
+}
+
+static PyObject * Trackable_set_data_bundle(Trackable *self, PyObject *arg)
+{
+    Py_XDECREF(self->data_bundle);
+    Py_INCREF(arg);
+    self->data_bundle = arg;
+
+    Py_RETURN_NONE;
+}
+
 static PyMemberDef Trackable_members[] = {
     {NULL}
 };
 
 static PyMethodDef Trackable_methods[] = {
-    {"set_tracker", (PyCFunction) Trackable_set_tracker, METH_O,
+    {"_set_tracker", (PyCFunction) Trackable_set_tracker, METH_O,
      "Set a new tracker object"
     },
-    {"get_tracker", (PyCFunction) Trackable_get_tracker, METH_NOARGS,
+    {"_get_tracker", (PyCFunction) Trackable_get_tracker, METH_NOARGS,
      "Return the current tracker object"
+    },
+    {"_set_data_bundle", (PyCFunction) Trackable_set_data_bundle, METH_O,
+     "Set the optional data bundle for a trackable object"
+    },
+    {"_get_data_bundle", (PyCFunction) Trackable_get_data_bundle, METH_NOARGS,
+     "Return the optional data bundle for a trackable object"
+    },
+    {"_get_tracker_serial", (PyCFunction) Trackable_get_tracker_serial, METH_NOARGS,
+     "Return the unique serial number assigned to this object"
     },
     {NULL}
 };
