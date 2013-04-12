@@ -3,6 +3,7 @@
 static PyObject * meth_ATTACH;
 static PyObject * meth_DETACH;
 static PyObject * meth_DESTROY;
+static PyObject * meth_UPDATE;
 
 static PyObject *  global_tracker = NULL;
 static unsigned long long serial_number = 0;
@@ -115,6 +116,8 @@ static PyObject * Trackable_set_data_bundle(Trackable *self, PyObject *arg)
     Py_INCREF(arg);
     self->data_bundle = arg;
 
+    pingtracker(self, meth_UPDATE);
+
     Py_RETURN_NONE;
 }
 
@@ -219,6 +222,7 @@ PyMODINIT_FUNC inittrackable(void)
     meth_ATTACH = Py_BuildValue("s", "notify_attached");
     meth_DETACH = Py_BuildValue("s", "notify_detached");
     meth_DESTROY = Py_BuildValue("s", "notify_destroyed");
+    meth_UPDATE = Py_BuildValue("s", "notify_updated");
 
     TrackableError = PyErr_NewException("trackable.error", NULL, NULL);
     Py_INCREF(TrackableError);

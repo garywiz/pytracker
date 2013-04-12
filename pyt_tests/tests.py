@@ -21,7 +21,7 @@ class SerialTracker(pyt.Tracker):
             return self[serial]
         except KeyError:
             pass
-        e = self[serial] = pyt.tracker._TrackedType()
+        e = self[serial] = pyt.tracker.TrackedType()
         e.objtype = objtype
         e.bundle = bundle
         return e
@@ -62,6 +62,7 @@ class test_all(unittest.TestCase):
         obj2 = track2(tracker)
         obj3 = track1(tracker)
         obj4 = track2(tracker)
+        gc.collect()
         self.assertEqual(len(tracker), 4)
         obj1s = obj1._get_tracker_serial()
         obj2s = obj2._get_tracker_serial()
