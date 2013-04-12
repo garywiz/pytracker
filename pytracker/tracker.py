@@ -24,8 +24,11 @@ class TrackedType(object):
 
     @track_objects.setter
     def track_objects(self, trackem):
-        if self.objects is None:
-            self.objects = dict()
+        if trackem:
+            if self.objects is None:
+                self.objects = dict()
+        else:
+            self.objects = None
 
     def track(self, serial, objtype, bundle):
         if self.objects is not None:
