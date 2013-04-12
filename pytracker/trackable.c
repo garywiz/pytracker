@@ -33,7 +33,7 @@ PyObject* Trackable_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
     Py_INCREF(Py_None);
     self->data_bundle = Py_None;
 
-    if (global_tracker != NULL)
+    if (global_tracker != NULL && !PyObject_HasAttrString((PyObject*)type, "_disable_global_tracker"))
 	self->tracker = global_tracker;
     else
 	self->tracker = Py_None;

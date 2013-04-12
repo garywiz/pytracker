@@ -9,6 +9,9 @@ class foo1(pyt.Trackable):
 class foo2(foo1):
     pass
 
+class foo3(foo1):
+    _disable_global_tracker = True
+
 t = pyt.Tracker()
 pyt.set_global_tracker(t)
 
@@ -16,10 +19,11 @@ x1 = foo1('first')
 x2 = foo2('second')
 x3 = foo1('third')
 x4 = foo2('fourth')
+x5 = foo3('not to be tracked')
 
 t.dump()
 
-x3 = x4 = None
+x3 = x4 = x5 = None
 
 t.dump()
 
