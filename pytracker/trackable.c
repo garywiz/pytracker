@@ -135,7 +135,7 @@ static PyObject * Trackable__getstate__(Trackable *self, PyObject *arg)
 	Py_INCREF(dict);
     }
 
-    ret = Py_BuildValue("OO", self->data_bundle, dict);
+    ret = Py_BuildValue("OO", dict, self->data_bundle);
 
     Py_DECREF(dict);
    
@@ -148,9 +148,9 @@ static PyObject * Trackable__setstate__(Trackable *self, PyObject *arg)
     PyObject * dict_in;
     PyObject * dict_cur;
 
-    if ((bundle_in = PyTuple_GetItem(arg, 0)) == NULL)
+    if ((bundle_in = PyTuple_GetItem(arg, 1)) == NULL)
 	return NULL;
-    if ((dict_in = PyTuple_GetItem(arg, 1)) == NULL)
+    if ((dict_in = PyTuple_GetItem(arg, 0)) == NULL)
 	return NULL;
 
     Py_INCREF(bundle_in);
