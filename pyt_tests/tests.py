@@ -1,6 +1,42 @@
 import unittest
 import gc
+import sys
+import re
 import pytracker as pyt
+import importlib
+from cStringIO import StringIO
+
+RE_SANITIZE = re.compile(r'0x[0-9a-f]+')
+
+class textcheck(object):
+    
+    def __init__(self, pymod, checkfile):
+        self.pymod = pymod
+        self.checkfile = "pyt_tests/" + checkfile
+
+    def get_test_output(self):
+        oldstd = sys.stdout
+        sys.stdout = StringIO()
+        importlib.import_module("pyt_tests."+self.pymod)
+        sys.stdout.flush()
+        output = sys.stdout.getvalue()
+        sys.stdout = oldstd
+        return RE_SANITIZE.sub('0xXXXXXXXX', output)
+
+    def get_verify(self):
+        cf = file(self.checkfile, "rb")
+        return cf.read()
+
+    def run(self, unit):
+        testo = self.get_test_output()
+        try:
+            verifyo = self.get_verify()
+        except IOError:
+            print "NO VERIFY DATA - CREATING"
+            file(self.checkfile, "wb").write(testo)
+            return
+
+        unit.assertEqual(testo, verifyo, "Test output does not match verify data")
 
 class track1(pyt.Trackable):
 
@@ -79,3 +115,9 @@ class test_all(unittest.TestCase):
         self.assertEqual(tracker[obj3s].bundle, 'bundle one')
         self.assertEqual(tracker[obj2s].bundle, 'bundle two')
         self.assertEqual(tracker[obj4s].bundle, 'bundle two')
+
+    def test_trackable4(self):
+        "Does more complex copy tests"
+
+        tc = textcheck("copytests", "copytests.verify")
+        tc.run(self)

@@ -124,6 +124,62 @@ static PyObject * Trackable_set_data_bundle(Trackable *self, PyObject *arg)
     Py_RETURN_NONE;
 }
 
+static PyObject * Trackable__getstate__(Trackable *self, PyObject *arg)
+{
+    PyObject * ret;
+    PyObject * dict = PyObject_GetAttrString((PyObject *) self, "__dict__");
+
+    if (dict == NULL) {
+	PyErr_Clear();
+	dict = Py_None;
+	Py_INCREF(dict);
+    }
+
+    ret = Py_BuildValue("OO", self->data_bundle, dict);
+
+    Py_DECREF(dict);
+   
+    return ret;
+}
+
+static PyObject * Trackable__setstate__(Trackable *self, PyObject *arg)
+{
+    PyObject * bundle_in;
+    PyObject * dict_in;
+    PyObject * dict_cur;
+
+    if ((bundle_in = PyTuple_GetItem(arg, 0)) == NULL)
+	return NULL;
+    if ((dict_in = PyTuple_GetItem(arg, 1)) == NULL)
+	return NULL;
+
+    Py_INCREF(bundle_in);
+    Py_INCREF(dict_in);
+
+    Py_XDECREF(self->data_bundle);
+    self->data_bundle = bundle_in;
+
+    if (dict_in != Py_None) {
+	dict_cur = PyObject_GetAttrString((PyObject *) self, "__dict__");
+
+	if (dict_cur == NULL)
+	    PyErr_Clear();
+	else if (PyDict_Update(dict_cur, dict_in) < 0) {
+	    Py_XDECREF(dict_cur);
+	    Py_XDECREF(dict_in);
+	    return NULL;
+	}
+
+	Py_XDECREF(dict_cur);
+    }
+	
+    Py_XDECREF(dict_in);
+
+    pingtracker(self, meth_UPDATE);
+
+    Py_RETURN_NONE;
+}
+
 static PyMemberDef Trackable_members[] = {
     {NULL}
 };
@@ -143,6 +199,12 @@ static PyMethodDef Trackable_methods[] = {
     },
     {"_get_tracker_serial", (PyCFunction) Trackable_get_tracker_serial, METH_NOARGS,
      "Return the unique serial number assigned to this object"
+    },
+    {"__getstate__", (PyCFunction) Trackable__getstate__, METH_NOARGS,
+     "Pickling protocol getstate function for trackables"
+    },
+    {"__setstate__", (PyCFunction) Trackable__setstate__, METH_O,
+     "Pickling protocol state restoration"
     },
     {NULL}
 };

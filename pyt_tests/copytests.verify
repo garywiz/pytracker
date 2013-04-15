@@ -1,0 +1,85 @@
+
+Testing normal derived object
+
+data bundle before: ('bundle', 'foo object', '<pyt_tests.copytests.foo object at 0xXXXXXXXX>')
+foo before: <pyt_tests.copytests.foo object at 0xXXXXXXXX>
+data bundle before: ('bundle', 'foo object', '<pyt_tests.copytests.foo object at 0xXXXXXXXX>')
+msg before: message is: foo object
+Trackable                                allocated: 0            retired: 0           
+foo                                      allocated: 1            retired: 0           
+   obj#8        bundle:'('bundle', 'foo object', '<pyt_tests.copytests.foo object at 0xXXXXXXXX>')'
+foos                                     allocated: 0            retired: 0           
+Trackable                                allocated: 0            retired: 0           
+foo                                      allocated: 0 (-1)       retired: 1 (+1)      
+foos                                     allocated: 0            retired: 0           
+foo after: <pyt_tests.copytests.foo object at 0xXXXXXXXX>
+data bundle after: ('bundle', 'foo object', '<pyt_tests.copytests.foo object at 0xXXXXXXXX>')
+msg after: message is: foo object
+Trackable                                allocated: 0            retired: 0           
+foo                                      allocated: 2 (+2)       retired: 1           
+   obj#9        bundle:'('bundle', 'foo object', '<pyt_tests.copytests.foo object at 0xXXXXXXXX>')'
+   obj#10       bundle:'('bundle', 'foo object', '<pyt_tests.copytests.foo object at 0xXXXXXXXX>')'
+foos                                     allocated: 0            retired: 0           
+Trackable                                allocated: 0            retired: 0           
+foo                                      allocated: 1 (-1)       retired: 2 (+1)      
+   obj#10       bundle:'('bundle', 'foo object', '<pyt_tests.copytests.foo object at 0xXXXXXXXX>')'
+foos                                     allocated: 0            retired: 0           
+Trackable                                allocated: 0            retired: 0           
+foo                                      allocated: 0 (-1)       retired: 3 (+1)      
+foos                                     allocated: 0            retired: 0           
+
+Testing bare trackable
+
+data bundle before: hardcoded bundle
+bar before: <pytracker.trackable.Trackable object at 0xXXXXXXXX>
+data bundle before: hardcoded bundle
+Trackable                                allocated: 1 (+1)       retired: 0           
+   obj#11       bundle:'hardcoded bundle'
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 0            retired: 0           
+Trackable                                allocated: 0 (-1)       retired: 1 (+1)      
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 0            retired: 0           
+bar after: <pytracker.trackable.Trackable object at 0xXXXXXXXX>
+data bundle after: hardcoded bundle
+Trackable                                allocated: 2 (+2)       retired: 1           
+   obj#12       bundle:'hardcoded bundle'
+   obj#13       bundle:'hardcoded bundle'
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 0            retired: 0           
+Trackable                                allocated: 1 (-1)       retired: 2 (+1)      
+   obj#13       bundle:'hardcoded bundle'
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 0            retired: 0           
+Trackable                                allocated: 0 (-1)       retired: 3 (+1)      
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 0            retired: 0           
+
+Testing subclass with slots
+
+data bundle before: ('bundle', 'foos object', '<pyt_tests.copytests.foos object at 0xXXXXXXXX>')
+foos before: <pyt_tests.copytests.foos object at 0xXXXXXXXX>
+data bundle before: ('bundle', 'foos object', '<pyt_tests.copytests.foos object at 0xXXXXXXXX>')
+msg before: message is: foos object
+Trackable                                allocated: 0            retired: 3           
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 1 (+1)       retired: 0           
+   obj#14       bundle:'('bundle', 'foos object', '<pyt_tests.copytests.foos object at 0xXXXXXXXX>')'
+Trackable                                allocated: 0            retired: 3           
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 0 (-1)       retired: 1 (+1)      
+foos after: <pyt_tests.copytests.foos object at 0xXXXXXXXX>
+data bundle after: ('bundle', 'foos object', '<pyt_tests.copytests.foos object at 0xXXXXXXXX>')
+msg after: message is: foos object
+Trackable                                allocated: 0            retired: 3           
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 2 (+2)       retired: 1           
+   obj#16       bundle:'('bundle', 'foos object', '<pyt_tests.copytests.foos object at 0xXXXXXXXX>')'
+   obj#15       bundle:'('bundle', 'foos object', '<pyt_tests.copytests.foos object at 0xXXXXXXXX>')'
+Trackable                                allocated: 0            retired: 3           
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 1 (-1)       retired: 2 (+1)      
+   obj#16       bundle:'('bundle', 'foos object', '<pyt_tests.copytests.foos object at 0xXXXXXXXX>')'
+Trackable                                allocated: 0            retired: 3           
+foo                                      allocated: 0            retired: 3           
+foos                                     allocated: 0 (-1)       retired: 3 (+1)      
