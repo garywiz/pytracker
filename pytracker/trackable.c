@@ -57,12 +57,15 @@ success:
 static int Trackable_traverse(Trackable *self, visitproc visit, void *arg)
 {
     Py_VISIT(self->tracker);
+    Py_VISIT(self->data_bundle);
 
     return 0;
 }
 
 static int Trackable_clear(Trackable *self)
 {
+    pingtracker(self, meth_DESTROY);
+
     Py_CLEAR(self->tracker);
     Py_CLEAR(self->serial);
     Py_CLEAR(self->data_bundle);
@@ -72,7 +75,7 @@ static int Trackable_clear(Trackable *self)
 
 void Trackable_dealloc(Trackable* self)
 {
-    pingtracker(self, meth_DESTROY);
+    PyObject_GC_UnTrack(self);
 
     Trackable_clear(self);
     self->ob_type->tp_free((PyObject*)self);

@@ -93,7 +93,8 @@ class Tracker(TrackerMixin, dict):
     def dump(self):
         odict = self._dict_snapshot
 
-        for t in self.itervalues():
+        for k in sorted(self.keys()):
+            t = self[k]
             oldentry = odict and odict.get(t.objtype.__name__)
             print "{name:<40s} allocated: {alloc:<12s} retired: {dealloc:<12s}".format(
                 name = t.objtype.__name__,
