@@ -36,7 +36,7 @@ class textcheck(object):
             file(self.checkfile, "wb").write(testo)
             return
 
-        unit.assertEqual(testo, verifyo, "Test output does not match verify data")
+        unit.assertEqual(testo, verifyo, "Test output does not match verify data.  Test output is...\n=====\n" + testo + "\n=====\n")
 
 class track1(pyt.Trackable):
 

@@ -7,6 +7,7 @@ static PyObject * meth_UPDATE;
 
 static PyObject *  global_tracker = NULL;
 static unsigned long long serial_number = 0;
+static PyObject *  TrackableError = NULL;
 
 static void pingtracker(Trackable *self, PyObject * method)
 {
@@ -15,7 +16,8 @@ static void pingtracker(Trackable *self, PyObject * method)
     if (self->tracker == Py_None)
 	return;
    
-    result = PyObject_CallMethodObjArgs(self->tracker, method, self->serial, self->ob_type, self->data_bundle, NULL);
+    result = PyObject_CallMethodObjArgs(self->tracker, method, self->serial, self->ob_type, 
+					self->data_bundle? self->data_bundle : Py_None, NULL);
     if (result == NULL) {
 	PyErr_Clear();
     } else {
@@ -29,6 +31,12 @@ PyObject* Trackable_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 
     self = (Trackable*) type->tp_alloc(type, 0);
     if (self == NULL) goto error;
+
+    /* The data_bundle is "None" initially.  Though it can be deleted in Python, we still behave as IF it is None
+       when we provide notifications and even when we return it via _get_data_bundle().  This is a courtesy,
+       as we don't expect people to delete it under normal curcimstances, but don't want to penalize them
+       with strange "AttributeError" exceptions if they do, and surely don't want those exceptions raised
+       during the (hidden) tracking operations. */
 
     Py_INCREF(Py_None);
     self->data_bundle = Py_None;
@@ -109,8 +117,13 @@ static PyObject * Trackable_get_tracker_serial(Trackable *self)
 
 static PyObject * Trackable_get_data_bundle(Trackable *self)
 {
-    Py_INCREF(self->data_bundle);
-    return self->data_bundle;
+    PyObject *bundle = self->data_bundle;
+
+    if (bundle == NULL)
+	bundle = Py_None;
+
+    Py_INCREF(bundle);
+    return bundle;
 }
 
 static PyObject * Trackable_set_data_bundle(Trackable *self, PyObject *arg)
@@ -135,52 +148,97 @@ static PyObject * Trackable__getstate__(Trackable *self, PyObject *arg)
 	Py_INCREF(dict);
     }
 
-    ret = Py_BuildValue("OO", dict, self->data_bundle);
+    ret = Py_BuildValue("O{s:O}", dict, "_data_bundle", self->data_bundle? self->data_bundle : Py_None);
 
     Py_DECREF(dict);
    
     return ret;
 }
 
-static PyObject * Trackable__setstate__(Trackable *self, PyObject *arg)
+static PyObject * Trackable__setstate__(Trackable *self, PyObject *state)
 {
-    PyObject * bundle_in;
-    PyObject * dict_in;
-    PyObject * dict_cur;
+    PyObject * slotstate;
+    PyObject * retval = NULL;
+    PyObject * d_key;
+    PyObject * d_value;
+    int i;
 
-    if ((bundle_in = PyTuple_GetItem(arg, 1)) == NULL)
-	return NULL;
-    if ((dict_in = PyTuple_GetItem(arg, 0)) == NULL)
-	return NULL;
+    Py_INCREF(state);
 
-    Py_INCREF(bundle_in);
-    Py_INCREF(dict_in);
+    /* 
+       Because we define a __setstate__, things will be easier for subclasses if we provide a 100%
+       compatible implementation fo the level 2 pickle protocol.  In other words, the state
+       object consists of a tuple:
+          (dictstate, slotstate)
+       
+       (This was (mostly) derived from http://hg.python.org/cpython/file/d9921cb6e3cd/Modules/cPickle.c. 
+     */
 
-    Py_XDECREF(self->data_bundle);
-    self->data_bundle = bundle_in;
-
-    if (dict_in != Py_None) {
-	dict_cur = PyObject_GetAttrString((PyObject *) self, "__dict__");
-
-	if (dict_cur == NULL)
-	    PyErr_Clear();
-	else if (PyDict_Update(dict_cur, dict_in) < 0) {
-	    Py_XDECREF(dict_cur);
-	    Py_XDECREF(dict_in);
-	    return NULL;
-	}
-
-	Py_XDECREF(dict_cur);
+    if (PyTuple_Check(state) && PyTuple_Size(state) == 2) {
+        PyObject *temp = state;
+        state = PyTuple_GET_ITEM(temp, 0);
+        slotstate = PyTuple_GET_ITEM(temp, 1);
+        Py_INCREF(state);
+        Py_INCREF(slotstate);
+        Py_DECREF(temp);
     }
-	
-    Py_XDECREF(dict_in);
+    else
+        slotstate = NULL;
+
+    /* Set inst.__dict__ from the state dict (if any). */
+    if (state != Py_None) {
+        PyObject *dict;
+        if (! PyDict_Check(state)) {
+            PyErr_SetString(TrackableError, "state is not a dictionary");
+            goto finally;
+        }
+        dict = PyObject_GetAttrString((PyObject*)self, "__dict__");
+        if (dict == NULL)
+            goto finally;
+
+        i = 0;
+        while (PyDict_Next(state, &i, &d_key, &d_value)) {
+	    /* Speed lookups by using the interned value if one exists. */
+            Py_INCREF(d_key);
+            if (PyString_CheckExact(d_key))
+                PyString_InternInPlace(&d_key);
+            if (PyObject_SetItem(dict, d_key, d_value) < 0) {
+                Py_DECREF(d_key);
+                goto finally;
+            }
+            Py_DECREF(d_key);
+        }
+        Py_DECREF(dict);
+    }
+
+    /* Also set instance attributes from the slotstate dict (if any). */
+    if (slotstate != NULL) {
+        if (!PyDict_Check(slotstate)) {
+            PyErr_SetString(TrackableError, "slot state is not a dictionary");
+            goto finally;
+        }
+        i = 0;
+        while (PyDict_Next(slotstate, &i, &d_key, &d_value)) {
+            if (PyObject_SetAttr((PyObject*)self, d_key, d_value) < 0)
+                goto finally;
+        }
+    }
 
     pingtracker(self, meth_UPDATE);
 
-    Py_RETURN_NONE;
+    retval = Py_None;
+    Py_INCREF(retval);
+
+  finally:
+    Py_XDECREF(state);
+    Py_XDECREF(slotstate);
+
+    return retval;
 }
 
 static PyMemberDef Trackable_members[] = {
+    {"_data_bundle", T_OBJECT_EX, offsetof(Trackable, data_bundle), 0,
+     "The data bundle.  Will be passed to the tracker upon notifications."},
     {NULL}
 };
 
@@ -278,7 +336,6 @@ static PyMethodDef trackableMethods[] = {
 PyMODINIT_FUNC inittrackable(void)
 {
     PyObject *m;
-    PyObject *TrackableError;
 
     m = Py_InitModule("trackable", trackableMethods);
     if (m == NULL)
@@ -291,7 +348,7 @@ PyMODINIT_FUNC inittrackable(void)
 
     TrackableError = PyErr_NewException("trackable.error", NULL, NULL);
     Py_INCREF(TrackableError);
-    PyModule_AddObject(m, "error", TrackableError);
+    PyModule_AddObject(m, "TrackableError", TrackableError);
 
     if (PyType_Ready(&_TrackableType) < 0)
 	return;
