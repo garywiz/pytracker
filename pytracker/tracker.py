@@ -2,15 +2,38 @@ import copy
 
 class TrackerMixin(object):
 
+    """
+    This class defines the protocol which must be supported by objects which are assigned
+    to trackable objects using :py:meth:`Trackable._set_tracker` or :py:func:`trackable.set_global_tracker`.
+    """
+
     def notify_attached(self, serial, obj_type, bundle):
-        pass
+        """
+        Whenever a trackable object is first assigned to a tracker, this method is triggered.
+
+        :param serial: The unique serial number fo the trackable object.
+        :param obj_type: The type of the object, essentially `type(obj)`.
+        :param bundle: The bundle object which may contain useful tracking information.
+        """
 
     def notify_detached(self, serial, obj_type, bundle):
-        pass
+        """
+        Just before a trackable object is assigned an alternate tracker (or `None`) this method
+        is triggered.
+
+        :param serial: The unique serial number fo the trackable object.
+        :param obj_type: The type of the object, essentially `type(obj)`.
+        :param bundle: The bundle object which may contain useful tracking information.
+        """
 
     def notify_destroyed(self, serial, obj_type, bundle):
-        pass
+        """
+        Just before a trackable object is freed, this method is triggered.
 
+        :param serial: The unique serial number fo the trackable object.
+        :param obj_type: The type of the object, essentially `type(obj)`.
+        :param bundle: The bundle object which may contain useful tracking information.
+        """
 
 class TrackedType(object):
     objtype = None
@@ -48,6 +71,11 @@ class TrackedType(object):
 
 
 class Tracker(TrackerMixin, dict):
+
+    """
+    This is a sample tracker object which can be used directly, or as a model for implementing
+    custom tracker objects.
+    """
 
     _dict_snapshot = None
 
