@@ -27,8 +27,8 @@ x3 = x4 = x5 = None
 
 t.dump()
 
-t.track_class(foo1)
-t.track_class(foo2)
+t.set_object_tracking(foo1)
+t.set_object_tracking(foo2)
 
 x1 = foo1('fifth')
 x2 = foo2('sixth')
