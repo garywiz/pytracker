@@ -25,9 +25,6 @@ setup(
     author = "Gary Wisniewski",
     author_email = "pypi-garywiz@gw.spidereye.com",
     url = "http://github.com/garywiz/pytracker",
-    data_files = [
-        ('pytracker', ['LICENSE']),
-        ],
     classifiers = [
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
