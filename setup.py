@@ -3,14 +3,21 @@ from setuptools import setup, Extension
 trackable = Extension('pytracker.trackable',
                       sources = ['pytracker/trackable.c'])
 
-with open('README.pypi') as file:
-    long_description = file.read()
+readme = """pytracker is a simple python extension that allows you to track instance usage in 
+production-level environments.
+
+================   =====================================
+Documentation      http://garywiz.github.io/pytracker
+pytracker Source   http://github.com/garywiz/pytracker
+pypi link          http://pypi.python.org/pypi/pytracker
+================   =====================================
+"""
 
 setup(
     name = "pytracker",
     version = '1.0',
     description = 'Object tracking classes for efficient inventory of allocated/freed objects',
-    long_description = long_description,
+    long_description = readme,
     ext_modules = [trackable],
     py_modules = ['pytracker/tracker', 'pytracker/__init__'],
     test_suite = "pyt_tests.tests.test_all",
@@ -18,6 +25,9 @@ setup(
     author = "Gary Wisniewski",
     author_email = "pypi-garywiz@gw.spidereye.com",
     url = "http://github.com/garywiz/pytracker",
+    data_files = [
+        ('pytracker', ['LICENSE']),
+        ],
     classifiers = [
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
