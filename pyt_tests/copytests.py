@@ -30,9 +30,9 @@ class foos(pyt.Trackable):
         super(foos, self).__setstate__(arg[1])
 
 
-t.track_class(foo)
-t.track_class(foos)
-t.track_class(pyt.Trackable)
+t.set_object_tracking(foo)
+t.set_object_tracking(foos)
+t.set_object_tracking(pyt.Trackable)
 
 def pickled(obj):
     buf = StringIO()
