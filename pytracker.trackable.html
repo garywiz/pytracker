@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Making Objects Trackable &mdash; pytracker 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pytracker 1.0 documentation" href="index.html" />
+    <link rel="next" title="Classes for Tracking Objects" href="pytracker.tracker.html" />
+    <link rel="prev" title="pytracker: Built-in Object Tracking for Production Code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pytracker.tracker.html" title="Classes for Tracking Objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pytracker: Built-in Object Tracking for Production Code"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pytracker 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="making-objects-trackable">
+<h1>Making Objects Trackable<a class="headerlink" href="#making-objects-trackable" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#pytracker.Trackable" title="pytracker.Trackable"><tt class="xref py py-class docutils literal"><span class="pre">pytracker.Trackable</span></tt></a> class makes it easy to do production-level tracking of
+object usage and allocation at runtime.</p>
+<p>Unlike other memory profiling tools, trackable objects are intended to be incorporated
+into the design of your system by becoming the superclass of objects which are important to track.
+It is especially useful for long-running applications where it is often difficult to determine
+where memory-leaks and bottlenecks are located until the application has been operating
+for longer periods of time in production.</p>
+<p>Trackable objects have none of the limitations commonly associated with the <a class="reference external" href="http://docs.python.org/2.7/reference/datamodel.html#object.__del__" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">__del__()</span></tt></a> method.
+Objects destruction will occur normally and will be collected by Python&#8217;s circular garbage
+detector.  However, this means that trackable objects can be bent to insidious purposes such
+as creating &#8220;hidden&#8221; destructors or observables.  Such uses, those possible, are not advised
+due to the problems inherent in accessing an object during its destruction phase.</p>
+<p>In most respects, you can substitute <a class="reference internal" href="#pytracker.Trackable" title="pytracker.Trackable"><tt class="xref py py-class docutils literal"><span class="pre">Trackable</span></tt></a>
+for any situation where <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt> is used, with the following
+caveats:</p>
+<ul class="simple">
+<li>Just as with any built-in object, you cannot multiply inherit from
+both <a class="reference internal" href="#pytracker.Trackable" title="pytracker.Trackable"><tt class="xref py py-class docutils literal"><span class="pre">Trackable</span></tt></a> and another built-in type
+(such as <a class="reference external" href="http://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></a> or <tt class="xref py py-class docutils literal"><span class="pre">list</span></tt>).  This is a
+limitation which applies to all Python built-ins, but means that it
+is not as simple as you&#8217;d like to create a trackable
+<a class="reference external" href="http://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></a>, for example.</li>
+<li>Objects which inherit from <a class="reference internal" href="#pytracker.Trackable" title="pytracker.Trackable"><tt class="xref py py-class docutils literal"><span class="pre">Trackable</span></tt></a> must be
+pickled with protocol level 2 or greater.</li>
+</ul>
+<p>Aside from the above, there are few limitations, and almost no performance overhead in using
+trackable objects.</p>
+<p>Using trackable objects is relatively straightforward:</p>
+<ul class="simple">
+<li>Instrument your code by assuring that relevant classes have
+<a class="reference internal" href="#pytracker.Trackable" title="pytracker.Trackable"><tt class="xref py py-class docutils literal"><span class="pre">Trackable</span></tt></a> as their superclass.</li>
+<li>Assign a tracker to each object created.  You can do this by using
+<a class="reference internal" href="#Trackable._set_tracker" title="Trackable._set_tracker"><tt class="xref py py-meth docutils literal"><span class="pre">_set_tracker()</span></tt></a> to assign the tracker
+in <tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt>, but it is better to set a global tracker
+using <a class="reference internal" href="#pytracker.set_global_tracker" title="pytracker.set_global_tracker"><tt class="xref py py-func docutils literal"><span class="pre">pytracker.set_global_tracker()</span></tt></a>.  Using a global
+tracker allows you to track unpickled objects more easily.</li>
+<li>Use the <a class="reference internal" href="pytracker.tracker.html#pytracker.Tracker.dump" title="pytracker.Tracker.dump"><tt class="xref py py-meth docutils literal"><span class="pre">pytracker.Tracker.dump()</span></tt></a> method to display the current inventory of objects, organized
+by class.  It is up to you to decide when and how to dump tracking information.  For example
+in one application of ours, we intercept <tt class="docutils literal"><span class="pre">SIGUSR1</span></tt> and write tracking information to our
+standard log file.   You can write your own tracker, however, to accomplish a much wider
+variety of tasks.  Any class which supports the <a class="reference internal" href="pytracker.tracker.html#pytracker.TrackerMixin" title="pytracker.TrackerMixin"><tt class="xref py py-class docutils literal"><span class="pre">TrackerMixin</span></tt></a> protocol can
+be assigned as an object tracker.  You can even create specialized trackers for different
+types of objects and use them concurrently.</li>
+</ul>
+<div class="section" id="pytracker-trackable-class">
+<h2>pytracker.Trackable class<a class="headerlink" href="#pytracker-trackable-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pytracker.Trackable">
+<em class="property">class </em><tt class="descclassname">pytracker.</tt><tt class="descname">Trackable</tt><a class="headerlink" href="#pytracker.Trackable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Any object to be tracked should be a subclass of this class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Trackable._set_tracker">
+<tt class="descclassname">Trackable.</tt><tt class="descname">_set_tracker</tt><big>(</big><em>tracker</em><big>)</big><a class="headerlink" href="#Trackable._set_tracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign a tracker to this object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tracker</strong> &#8211; The new tracker object</td>
+</tr>
+</tbody>
+</table>
+<p>This method can be used to set, or change, the tracker assigned to
+an object.  When a new tracker is assigned, the tracker&#8217;s
+<a class="reference internal" href="pytracker.tracker.html#pytracker.TrackerMixin.notify_attached" title="pytracker.TrackerMixin.notify_attached"><tt class="xref py py-meth docutils literal"><span class="pre">notify_attached()</span></tt></a> method will be
+triggered, notifying the tracker that a new object is being
+tracked.  If there was a tracker previously assigned (even if it
+was the same one), then the <a class="reference internal" href="pytracker.tracker.html#pytracker.TrackerMixin.notify_detached" title="pytracker.TrackerMixin.notify_detached"><tt class="xref py py-meth docutils literal"><span class="pre">notify_detached()</span></tt></a>
+method will be triggered for the old tracker beforehand.</p>
+<p>Because the current data bundle will be delivered with the notification, it is important to assure
+that the bundle is set before assigning a tracker if the tracker depends upon the bundle&#8217;s value.</p>
+<p>You can remove the assigned tracker by setting the tracker to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Trackable._get_tracker">
+<tt class="descclassname">Trackable.</tt><tt class="descname">_get_tracker</tt><big>(</big><big>)</big> &rarr; current tracker object or ``None``<a class="headerlink" href="#Trackable._get_tracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently assigned tracker object, or <tt class="docutils literal"><span class="pre">None</span></tt> if no tracker has been assigned.
+Note that if a global tracker is assigned, this method will, as one would expect, return
+the value the global tracker had when the instance was first created or unpickled.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Trackable._set_data_bundle">
+<tt class="descclassname">Trackable.</tt><tt class="descname">_set_data_bundle</tt><big>(</big><em>bundle</em><big>)</big><a class="headerlink" href="#Trackable._set_data_bundle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the object&#8217;s data bundle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bundle</strong> &#8211; Any python object to be delivered to the tracker when an object is created, destroyed
+or updated.</td>
+</tr>
+</tbody>
+</table>
+<p>The data bundle is an object that may be used by the tracker to
+maintain information about the pool of objects, such as extended
+information about the object, memory allocation information, or
+other debugging information.  The built-in
+<a class="reference internal" href="pytracker.tracker.html#pytracker.Tracker" title="pytracker.Tracker"><tt class="xref py py-class docutils literal"><span class="pre">pytracker.Tracker</span></tt></a> object does not use the data bundle,
+so it is entirely optional to obtain basic tracking information for
+objects.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The data bundle should <em>not</em> contain a reference to the
+original object, no matter how tempting it is to do so.
+Including the original object, while possible, requires extreme
+caution since the
+<a class="reference internal" href="pytracker.tracker.html#pytracker.TrackerMixin.notify_destroyed" title="pytracker.TrackerMixin.notify_destroyed"><tt class="xref py py-meth docutils literal"><span class="pre">notify_destroyed()</span></tt></a> trigger
+method is called when the tracked object is being deallocated.
+While it is acceptable to access the object at this time, it is
+essential that no references be kept, otherwise unpredictable
+behavior may result.</p>
+<p>For this reason, the serial number should be used to create tracking information or data
+about the object, if indeed individual object tracking is desired.</p>
+<p class="last">When the bundle is set, the tracker&#8217;s
+<a class="reference internal" href="pytracker.tracker.html#pytracker.TrackerMixin.notify_updated" title="pytracker.TrackerMixin.notify_updated"><tt class="xref py py-meth docutils literal"><span class="pre">notify_updated()</span></tt></a> is triggered.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Trackable._get_data_bundle">
+<tt class="descclassname">Trackable.</tt><tt class="descname">_get_data_bundle</tt><big>(</big><big>)</big> &rarr; current data bundle object<a class="headerlink" href="#Trackable._get_data_bundle" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns the currently set data bundle object associated with this object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Trackable._get_tracker_serial">
+<tt class="descclassname">Trackable.</tt><tt class="descname">_get_tracker_serial</tt><big>(</big><big>)</big> &rarr; unique integer serial number<a class="headerlink" href="#Trackable._get_tracker_serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>When it is created, each trackable object is assigned a unique, monotonically increasing serial
+number.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="pickling-and-copying">
+<h2>Pickling and Copying<a class="headerlink" href="#pickling-and-copying" title="Permalink to this headline">¶</a></h2>
+<p>For the most part, instances <a class="reference internal" href="#pytracker.Trackable" title="pytracker.Trackable"><tt class="xref py py-class docutils literal"><span class="pre">Trackable</span></tt></a> object subclasses may be
+copied and pickled using any normal means, such as <a class="reference external" href="http://docs.python.org/2.7/library/copy.html#copy.copy" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">copy.copy()</span></tt></a> or <a class="reference external" href="http://docs.python.org/2.7/library/pickle.html#pickle.dumps" title="(in Python v2.7)"><tt class="xref py py-func docutils literal"><span class="pre">pickle.dumps()</span></tt></a>.</p>
+<p>By default, trackable objects conform to the protocol 2 <a class="reference external" href="http://docs.python.org/2.7/library/pickle.html#object.__setstate__" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">__setstate__()</span></tt></a> and
+<a class="reference external" href="http://docs.python.org/2.7/library/pickle.html#object.__getstate__" title="(in Python v2.7)"><tt class="xref py py-meth docutils literal"><span class="pre">__getstate__()</span></tt></a> implementations as described in <span class="target" id="index-0"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-0307"><strong>PEP 307</strong></a>.  In other words,
+<tt class="docutils literal"><span class="pre">__getstate__</span></tt> is expected to return a tuple:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">dict_or_none</span><span class="p">,</span> <span class="n">slot_state_dict_or_none</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Generally, subclasses which want to deliver a custom state should either override
+<tt class="docutils literal"><span class="pre">__getstate__</span></tt> completely, or call the superclass <tt class="docutils literal"><span class="pre">__getstate__</span></tt> and modify its contents
+before returning it.</p>
+</div>
+<div class="section" id="module-functions">
+<h2>Module Functions<a class="headerlink" href="#module-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytracker.set_global_tracker">
+<tt class="descclassname">pytracker.</tt><tt class="descname">set_global_tracker</tt><big>(</big><em>tracker</em><big>)</big><a class="headerlink" href="#pytracker.set_global_tracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies a global tracker to be used when any trackable object is created.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tracker</strong> &#8211; Any object which conforms to the <a class="reference internal" href="pytracker.tracker.html#pytracker.TrackerMixin" title="pytracker.TrackerMixin"><tt class="xref py py-class docutils literal"><span class="pre">pytracker.TrackerMixin</span></tt></a> protocol.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytracker.version">
+<tt class="descclassname">pytracker.</tt><tt class="descname">version</tt><big>(</big><big>)</big> &rarr; version string<a class="headerlink" href="#pytracker.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the version of the trackable objects module.  Currently returns an integer value <tt class="docutils literal"><span class="pre">1</span></tt>.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Making Objects Trackable</a><ul>
+<li><a class="reference internal" href="#pytracker-trackable-class">pytracker.Trackable class</a></li>
+<li><a class="reference internal" href="#pickling-and-copying">Pickling and Copying</a></li>
+<li><a class="reference internal" href="#module-functions">Module Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">pytracker: Built-in Object Tracking for Production Code</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pytracker.tracker.html"
+                        title="next chapter">Classes for Tracking Objects</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pytracker.trackable.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pytracker.tracker.html" title="Classes for Tracking Objects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pytracker: Built-in Object Tracking for Production Code"
+             >previous</a> |</li>
+        <li><a href="index.html">pytracker 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Gary J. Wisniewski.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
