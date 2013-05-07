@@ -34,6 +34,8 @@ and easily.  For example::
 Tracked objects must be pickled using a protocol level of 2 or greater when
 using :py:func:`pickle.dump`.
 
+Any bugs should be reported as issues at https://github.com/garywiz/pytracker/issues.
+
 Contents
 --------
 
@@ -43,6 +45,22 @@ Contents
    pytracker.trackable
    pytracker.tracker
 
+Downloading and Installing
+--------------------------
+
+The easiest way to install ``pytracker`` is using ``pip`` from the https://pypi.python.org/pypi/pytracker package::
+
+    # Ubuntu or debian prerequisites...
+    apt-get install pip
+    apt-get install python-dev
+    apt-get install gcc
+
+    # pytracker installation (may be all you need)
+    pip install pytracker
+
+If you're interested in the source code, or contributing, you can find the ``pytracker`` source code 
+at https://github.com/garywiz/pytracker.
+    
 Indices and tables
 ------------------
 
