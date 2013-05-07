@@ -1,19 +1,18 @@
-.. pytracker documentation master file, created by
-   sphinx-quickstart on Mon May  6 17:19:12 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 pytracker: Built-in Object Tracking for Production Code
-=======================================================
+-------------------------------------------------------
+
+For full documentation, see http://garywiz.github.io/pytracker.
+
+If you're in a hurry, here's a quick overview:
 
 The `pytracker` extension provides a small, efficient set of classes
 for tracking object usage in production code.  In order to track objects,
-they must be subclasses of the :py:class:`pytracker.Trackable` class, which
-in most cases behaves exactly like the :py:class:`object` class.
+they must be subclasses of the `pytracker.Trackable` class, which
+in most cases behaves exactly like the Python `object` class.
 
 Though you can create your own tracker to collect more comprehensive information
 about live objects, there is a simple tracker provided which can be used quickly
-and easily.  For example::
+and easily.  For example:
 
     >>> from pytracker import Tracker, Trackable, set_global_tracker
     >>> t = Tracker()
@@ -31,24 +30,10 @@ and easily.  For example::
     track_my_instances                       allocated: 1 (-1)       retired: 1 (+1)      
     >>> 
 
-Tracked objects must be pickled using a protocol level of 2 or greater when
-using :py:func:`pickle.dump`.
-
-Any bugs should be reported as issues at https://github.com/garywiz/pytracker/issues.
-
-Contents
---------
-
-.. toctree::
-   :maxdepth: 2
-
-   pytracker.trackable
-   pytracker.tracker
-
 Downloading and Installing
 --------------------------
 
-The easiest way to install ``pytracker`` is using ``pip`` from the https://pypi.python.org/pypi/pytracker package::
+The easiest way to install `pytracker`` is using `pip` from the https://pypi.python.org/pypi/pytracker package:
 
     # Ubuntu or debian prerequisites...
     apt-get install pip
@@ -58,20 +43,10 @@ The easiest way to install ``pytracker`` is using ``pip`` from the https://pypi.
     # pytracker installation (may be all you need)
     pip install pytracker
 
-If you're interested in the source code, or contributing, you can find the ``pytracker`` source code 
-at https://github.com/garywiz/pytracker.
-    
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 License
 -------
 
-This software is distributed under the `BSD-3 License <http://opensource.org/licenses/BSD-3-Clause>`_:
+This software is distributed under the BSD License.
 
 Copyright (c) 2013, Gary J. Wisniewski,
 All rights reserved.
