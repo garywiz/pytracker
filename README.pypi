@@ -1,0 +1,4 @@
+pytracker is a simple python extension that allows you to track instance usage in 
+production-level environments.
+
+All information about pytracker is stored at http://github.com/garywiz/pytracker
