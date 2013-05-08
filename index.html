@@ -49,10 +49,17 @@
             
   <div class="section" id="pytracker-built-in-object-tracking-for-production-code">
 <h1>pytracker: Built-in Object Tracking for Production Code<a class="headerlink" href="#pytracker-built-in-object-tracking-for-production-code" title="Permalink to this headline">¶</a></h1>
-<p>The <cite>pytracker</cite> extension provides a small, efficient set of classes
+<p>The <tt class="docutils literal"><span class="pre">pytracker</span></tt> extension provides a small, efficient set of classes
 for tracking object usage in production code.  In order to track objects,
 they must be subclasses of the <a class="reference internal" href="pytracker.trackable.html#pytracker.Trackable" title="pytracker.Trackable"><tt class="xref py py-class docutils literal"><span class="pre">pytracker.Trackable</span></tt></a> class, which
 in most cases behaves exactly like the <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt> class.</p>
+<p>Unlike existing packages like
+<a class="reference external" href="http://guppy-pe.sourceforge.net/">Heapy</a> and
+<a class="reference external" href="http://pysizer.8325.org/">PySizer</a>, <tt class="docutils literal"><span class="pre">pytracker</span></tt> is not designed for
+profiling or debugging existing code, but is rather designed to allow
+you instrument production systems for monitoring of object usage
+during normal operation.  It is especially useful for optimizing long-running
+systems which may exhibit memory leaks or unusual usage patterns over time.</p>
 <p>Though you can create your own tracker to collect more comprehensive information
 about live objects, there is a simple tracker provided which can be used quickly
 and easily.  For example:</p>

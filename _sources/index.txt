@@ -6,10 +6,18 @@
 pytracker: Built-in Object Tracking for Production Code
 =======================================================
 
-The `pytracker` extension provides a small, efficient set of classes
+The ``pytracker`` extension provides a small, efficient set of classes
 for tracking object usage in production code.  In order to track objects,
 they must be subclasses of the :py:class:`pytracker.Trackable` class, which
 in most cases behaves exactly like the :py:class:`object` class.
+
+Unlike existing packages like
+`Heapy <http://guppy-pe.sourceforge.net/>`_ and
+`PySizer <http://pysizer.8325.org/>`_, ``pytracker`` is not designed for
+profiling or debugging existing code, but is rather designed to allow
+you instrument production systems for monitoring of object usage
+during normal operation.  It is especially useful for optimizing long-running
+systems which may exhibit memory leaks or unusual usage patterns over time.
 
 Though you can create your own tracker to collect more comprehensive information
 about live objects, there is a simple tracker provided which can be used quickly
