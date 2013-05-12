@@ -32,6 +32,8 @@ PyObject* Trackable_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
     self = (Trackable*) type->tp_alloc(type, 0);
     if (self == NULL) goto error;
 
+    self->weakreflist = NULL;
+
     /* The data_bundle is "None" initially.  Though it can be deleted in Python, we still behave as IF it is None
        when we provide notifications and even when we return it via _get_data_bundle().  This is a courtesy,
        as we don't expect people to delete it under normal curcimstances, but don't want to penalize them
@@ -85,7 +87,11 @@ void Trackable_dealloc(Trackable* self)
 {
     PyObject_GC_UnTrack(self);
 
+    if (self->weakreflist != NULL)
+	PyObject_ClearWeakRefs((PyObject *) self);
+
     Trackable_clear(self);
+    
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -293,7 +299,7 @@ PyTypeObject _TrackableType = {
     (traverseproc)Trackable_traverse, /*tp_traverse*/
     (inquiry)Trackable_clear,	      /*tp_clear*/
     0,			       /*tp_richcompare*/
-    0,			       /*tp_weaklistoffset*/
+    offsetof(Trackable, weakreflist), /*tp_weaklistoffset*/
     0,			       /*tp_iter*/
     0,			       /*tp_iternext*/
     Trackable_methods,	       /*tp_methods*/
