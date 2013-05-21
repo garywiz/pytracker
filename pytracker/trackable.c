@@ -167,7 +167,7 @@ static PyObject * Trackable__setstate__(Trackable *self, PyObject *state)
     PyObject * retval = NULL;
     PyObject * d_key;
     PyObject * d_value;
-    int i;
+    Py_ssize_t i;
 
     Py_INCREF(state);
 
@@ -319,7 +319,7 @@ PyTypeObject * TrackableType = NULL;
 
 static PyObject * trackable_version(PyObject *self, PyObject *args)
 {
-    return Py_BuildValue("i", 1);
+    return Py_BuildValue("i", 102);
 }
 
 static PyObject * trackable_set_global_tracker(PyObject *self, PyObject *arg)

@@ -151,4 +151,5 @@ Module Functions
 
 .. py:function:: pytracker.version() -> version string
 
-   Returns the version of the trackable objects module.  Currently returns an integer value ``1``.
+   Returns the version of the trackable objects module.  Returns the PyPI version number * 100.
+   So, version 1.03 is represented as an integer ``102``.
