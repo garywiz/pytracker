@@ -319,7 +319,7 @@ PyTypeObject * TrackableType = NULL;
 
 static PyObject * trackable_version(PyObject *self, PyObject *args)
 {
-    return Py_BuildValue("i", 102);
+    return Py_BuildValue("i", 103);
 }
 
 static PyObject * trackable_set_global_tracker(PyObject *self, PyObject *arg)
