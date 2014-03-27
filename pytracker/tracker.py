@@ -143,14 +143,14 @@ class Tracker(TrackerMixin, dict):
         self._get_entry(0, cls, None).track_objects = enable
 
     def reset_object_tracking(self, cls):
-        """
-        Clears any tracked objects for the given class.  Does nothing if object
-        tracking is not enabled for this class.
-        """
-        ent = self._get_entry(0, cls, None)
-        if ent.track_objects:
-            ent.track_objects = False
-            ent.track_objects = True
+       """
+       Clears any tracked objects for the given class.  Does nothing if object
+       tracking is not enabled for this class.
+       """
+       ent = self._get_entry(0, cls, None)
+       if ent.track_objects:
+           ent.track_objects = False
+           ent.track_objects = True
 
     def notify_attached(self, *args):
         "Triggered whenever a new trackable object is created."
@@ -188,8 +188,8 @@ class Tracker(TrackerMixin, dict):
             oldentry = odict and odict.get(t.objtype.__name__)
             print >>output, "{name:<40s} allocated: {alloc:<12s} retired: {dealloc:<12s}".format(
                 name = t.objtype.__name__,
-                alloc = self._format_changed_value(t.allocated, oldentry and oldentry.allocated), 
-                dealloc = self._format_changed_value(t.deallocated, oldentry and oldentry.deallocated))
+                alloc = self._format_changed_value(t.allocated, oldentry.allocated if oldentry else None), 
+                dealloc = self._format_changed_value(t.deallocated, oldentry.deallocated if oldentry else None))
             t.dump_objects(output)
 
         self._dict_snapshot = {k:copy.copy(v) for k,v in self.iteritems()}

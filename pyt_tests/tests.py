@@ -65,7 +65,7 @@ class SerialTracker(pyt.Tracker):
 class test_all(unittest.TestCase):
 
     def test_version(self):
-        self.assertEqual(pyt.version(), 103, 'Incorrect pytracker version number.')
+        self.assertEqual(pyt.version(), 104, 'Incorrect pytracker version number.')
 
     def test_trackable1(self):
         "Assure basic tracking works properly."
