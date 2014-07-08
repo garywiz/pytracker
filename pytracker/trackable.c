@@ -12,17 +12,28 @@ static PyObject *  TrackableError = NULL;
 static void pingtracker(Trackable *self, PyObject * method)
 {
     PyObject * result;
+    PyObject * ex_type;
+    PyObject * ex_value;
+    PyObject * ex_traceback;
 
-    if (self->tracker == Py_None)
+    if (self->tracker == NULL || self->tracker == Py_None)
 	return;
    
+    // We save the state of the exception and restore it.  Essentially, we ignore any possible
+    // exception in the tracker, but it will appear (in a rather unfriendly way) on the console
+    // if it occurs.  Bottom line: People should try to do the minimum in their trackers!
+    // This is similar to what happens when a __del__ is called.
+
+    PyErr_Fetch(&ex_type, &ex_value, &ex_traceback);
+
     result = PyObject_CallMethodObjArgs(self->tracker, method, self->serial, self->ob_type, 
 					self->data_bundle? self->data_bundle : Py_None, NULL);
-    if (result == NULL) {
-	PyErr_Clear();
-    } else {
-	Py_DECREF(result);
-    }
+    if (result == NULL)
+	PyErr_WriteUnraisable((PyObject *)self->tracker);
+	
+    Py_XDECREF(result);
+
+    PyErr_Restore(ex_type, ex_value, ex_traceback);
 }
 
 PyObject* Trackable_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
@@ -319,7 +330,7 @@ PyTypeObject * TrackableType = NULL;
 
 static PyObject * trackable_version(PyObject *self, PyObject *args)
 {
-    return Py_BuildValue("i", 104);
+    return Py_BuildValue("i", 105);
 }
 
 static PyObject * trackable_set_global_tracker(PyObject *self, PyObject *arg)
