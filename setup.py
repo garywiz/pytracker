@@ -15,7 +15,8 @@ pypi link          http://pypi.python.org/pypi/pytracker
 
 setup(
     name = "pytracker",
-    version = '1.0.5',          # ALSO update version number in pytracker/trackable.c & pyt_tests/tests.py
+    version = '1.0.5',          # ALSO update version number in pytracker/trackable.c & pyt_tests/tests.py,
+                                #      optionally doc/source/pytracker.trackable.rst
     description = 'Object tracking classes for efficient inventory of allocated/freed objects',
     long_description = readme,
     ext_modules = [trackable],
